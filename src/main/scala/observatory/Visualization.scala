@@ -3,7 +3,7 @@ package observatory
 import com.sksamuel.scrimage.{Image, Pixel}
 
 import scala.annotation.tailrec
-import scala.math.{abs, acos, cos, pow, round, sin, toRadians}
+import scala.math.{abs, acos, cos, pow, round, sin}
 
 /**
   * 2nd milestone: basic visualization
@@ -13,6 +13,9 @@ object Visualization extends VisualizationInterface {
   private val iwdPower = 2
   private val earthRadius = 6371
   private val distancePrecision = 1
+  private val (minLat, maxLat, minLon, maxLon) = (-89, 90, -180, 179)
+  private val (imageWidth, imageHeight) = (360, 180)
+  private val alpha = 255
 
   /**
     * @param temperatures Known temperatures: pairs containing a location and the temperature at this location
@@ -20,10 +23,13 @@ object Visualization extends VisualizationInterface {
     * @return The predicted temperature at `location`
     */
   def predictTemperature(temperatures: Iterable[(Location, Temperature)], target: Location): Temperature = {
-    val parTemperatures = temperatures.par
-    val equalToTarget = parTemperatures.filter{case (loc, _) => loc == target}
+    predictTemperature(radians(temperatures), RadianLocation(target))
+  }
+
+  def predictTemperature(temperatures: Iterable[(RadianLocation, Temperature)], target: RadianLocation): Temperature = {
+    val equalToTarget = temperatures.filter{case (loc, _) => loc == target}
     if (equalToTarget.isEmpty) {
-      val distances = parTemperatures.map{case(loc, temp) => (greatCircleDistance(loc, target), temp)}
+      val distances = temperatures.map{case(loc, temp) => (greatCircleDistance(loc, target), temp)}
       val closeOnes = distances.filter{case (distance, _) => distance < distancePrecision}
       if (closeOnes.isEmpty) {
         val (nom, denom) =
@@ -36,17 +42,18 @@ object Visualization extends VisualizationInterface {
     } else equalToTarget.head._2
   }
 
+  def radians(temperatures: Iterable[(Location, Temperature)]): Iterable[(RadianLocation, Temperature)] = {
+    temperatures.par.map{case (loc, temp) => (RadianLocation(loc), temp)}.toList
+  }
+
   def idwTerm(distance: Double, temp: Temperature): (Double, Double) = {
     val coeff = pow(distance, iwdPower)
     (temp / coeff, 1 / coeff)
   }
 
-  def greatCircleDistance(from: Location, to: Location): Double = {
-    val (fromR, toR) = (radians(from), radians(to))
-    acos(sin(fromR.lat) * sin(toR.lat) + cos(fromR.lat) * cos(toR.lat) * cos(abs(fromR.lon - toR.lon))) * earthRadius
+  def greatCircleDistance(from: RadianLocation, to: RadianLocation): Double = {
+    acos(sin(from.lat) * sin(to.lat) + cos(from.lat) * cos(to.lat) * cos(abs(from.lon - to.lon))) * earthRadius
   }
-
-  def radians(loc: Location): Location = Location(toRadians(loc.lat), toRadians(loc.lon))
 
   /**
     * @param points Pairs containing a value and its associated color
@@ -58,7 +65,7 @@ object Visualization extends VisualizationInterface {
     type ScaleVal = (Temperature, Color)
 
     @tailrec
-    def walk(scale: Seq[ScaleVal], prev: (Temperature, Color)): (ScaleVal, ScaleVal) = {
+    def walk(scale: Seq[ScaleVal], prev: ScaleVal): (ScaleVal, ScaleVal) = {
       if (scale.isEmpty) (prev, prev)
       else if (scale.head._1 < value) walk(scale.tail, scale.head)
       else (prev, scale.head)
@@ -87,8 +94,13 @@ object Visualization extends VisualizationInterface {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
-    ???
+    val locations = (maxLat to minLat by -1).par.flatMap(lat => (minLon to maxLon).map(lon => Location(lat, lon)))
+    val pixels = locations.map { loc =>
+      val temperature = predictTemperature(radians(temperatures), RadianLocation(loc))
+      val color = interpolateColor(colors, temperature)
+      Pixel(color.red, color.green, color.blue, alpha)
+    }
+    Image(imageWidth, imageHeight, pixels.toArray)
   }
-
 }
 

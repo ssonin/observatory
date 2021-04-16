@@ -55,8 +55,7 @@ object Extraction extends ExtractionInterface {
     stationsDF.filter($"lat".isNotNull && $"lon".isNotNull)
       .join(temperaturesDF, stationsDF("stn") <=> temperaturesDF("stn")
         && stationsDF("wban") <=> temperaturesDF("wban"))
-      .withColumn("year", lit(year))
-      .select($"lat", $"lon", $"year", $"month", $"day", celsius($"temperature").as("temperature"))
+      .select($"lat", $"lon", lit(year).as("year"), $"month", $"day", celsius($"temperature").as("temperature"))
   }
 
   /**

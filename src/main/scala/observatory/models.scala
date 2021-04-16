@@ -1,11 +1,22 @@
 package observatory
 
+import scala.math.{toRadians => radians}
+
 /**
   * Introduced in Week 1. Represents a location on the globe.
   * @param lat Degrees of latitude, -90 ≤ lat ≤ 90
   * @param lon Degrees of longitude, -180 ≤ lon ≤ 180
   */
 case class Location(lat: Double, lon: Double)
+
+/**
+  * Represents a location on the globe with latitude and longitude expressed in radians.
+  * @param loc a location with coordinates in degrees
+  */
+case class RadianLocation(loc: Location) {
+  val lat: Double = radians(loc.lat)
+  val lon: Double = radians(loc.lon)
+}
 
 /**
   * Introduced in Week 3. Represents a tiled web map tile.
