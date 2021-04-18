@@ -3,6 +3,7 @@ package observatory
 import com.sksamuel.scrimage.{Image, Pixel}
 
 import scala.annotation.tailrec
+import scala.collection.parallel.ParIterable
 import scala.math.{abs, acos, cos, pow, round, sin}
 
 /**
@@ -13,9 +14,6 @@ object Visualization extends VisualizationInterface {
   private val iwdPower = 2
   private val earthRadius = 6371
   private val distancePrecision = 1
-  private val (minLat, maxLat, minLon, maxLon) = (-89, 90, -180, 179)
-  private val (imageWidth, imageHeight) = (360, 180)
-  private val alpha = 255
 
   /**
     * @param temperatures Known temperatures: pairs containing a location and the temperature at this location
@@ -94,13 +92,25 @@ object Visualization extends VisualizationInterface {
     * @return A 360×180 image where each pixel shows the predicted temperature at its location
     */
   def visualize(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
+    val (minLat, maxLat, minLon, maxLon) = (-89, 90, -180, 179)
+    val (width, height) = (360, 180)
+    val alpha = 127
     val locations = (maxLat to minLat by -1).par.flatMap(lat => (minLon to maxLon).map(lon => Location(lat, lon)))
+    visualize(locations)(width, height, alpha)(temperatures, colors)
+  }
+
+  def visualize(locations: ParIterable[Location])
+               (width: Int, height: Int, alpha: Int)
+               (temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
+    require(width * height == locations.size,
+      s"(width * height) should be equal to locations.size: $width * $height != ${locations.size}")
+    val converted = radians(temperatures)
     val pixels = locations.map { loc =>
-      val temperature = predictTemperature(radians(temperatures), RadianLocation(loc))
+      val temperature = predictTemperature(converted, RadianLocation(loc))
       val color = interpolateColor(colors, temperature)
       Pixel(color.red, color.green, color.blue, alpha)
     }
-    Image(imageWidth, imageHeight, pixels.toArray)
+    Image(width, height, pixels.toArray)
   }
 }
 

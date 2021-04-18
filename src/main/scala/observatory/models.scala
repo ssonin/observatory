@@ -26,7 +26,15 @@ case class RadianLocation(loc: Location) {
   * @param y Y coordinate of the tile
   * @param zoom Zoom level, 0 ≤ zoom ≤ 19
   */
-case class Tile(x: Int, y: Int, zoom: Int)
+case class Tile(x: Int, y: Int, zoom: Int) {
+  def zoomIn: List[Tile] = {
+    List(
+      Tile(2 * x, 2 * y, zoom + 1),
+      Tile(2 * x + 1, 2 * y, zoom + 1),
+      Tile(2 * x, 2 * y + 1, zoom + 1),
+      Tile(2 * x + 1, 2 * y + 1, zoom + 1))
+  }
+}
 
 /**
   * Introduced in Week 4. Represents a point on a grid composed of
