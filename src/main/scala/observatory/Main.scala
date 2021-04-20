@@ -3,6 +3,7 @@ package observatory
 import java.io.File
 
 import com.sksamuel.scrimage.writer
+import observatory.Visualization.greatCircleDistance
 
 object Main extends App {
 
@@ -96,19 +97,43 @@ object Main extends App {
 //  println(tiles2.take(50))
 //  println(tiles == tiles2)
 
-  val t1 = (0 to 3).flatMap(
-    zoomLevel => (0 until (1 << zoomLevel)).flatMap(
-      x => (0 until (1 << zoomLevel)).map(y => Tile(x, y, zoomLevel))))
 
-  println(t1)
 
-  val t2 = for {
-    zoom <- 0 to 3
-    x <- 0 until (1 << zoom)
-    y <- 0 until (1 << zoom)
-  } yield Tile(x, y, zoom)
+//  val t1 = (0 to 3).flatMap(
+//    zoomLevel => (0 until (1 << zoomLevel)).flatMap(
+//      x => (0 until (1 << zoomLevel)).map(y => Tile(x, y, zoomLevel))))
+//
+//  println(t1)
+//
+//  val t2 = for {
+//    zoom <- 0 to 3
+//    x <- 0 until (1 << zoom)
+//    y <- 0 until (1 << zoom)
+//  } yield Tile(x, y, zoom)
+//
+//  println(t2)
+//  println(t1 == t2)
 
-  println(t2)
-  println(t1 == t2)
+//  val makeGridLocations = List((Location(45.0,-90.0),10.0), (Location(-45.0,0.0),20.0))
+  val makeGridLocations = List((Location(45.0,-90.0),5.0), (Location(-45.0,0.0),30.0))
+//  val copy = List((Location(45.0,-90.0),5.0), (Location(-45.0,0.0),30.0))
+//  println(makeGridLocations == copy)
+  val f = Manipulation.makeGrid(makeGridLocations)
+
+  val t = f(GridLocation(90, -180))
+  println(t)
+
+  println(greatCircleDistance(RadianLocation(Location(45.0,-90.0)), RadianLocation(Location(90, -180))))
+  println(greatCircleDistance(RadianLocation(Location(-45.0,0.0)), RadianLocation(Location(90, -180))))
+
+
+
+
+
+  //  val l = Location(90, -180)
+//  val lAnti = Location(-l.lat, l.lon + 180)
+//
+//  val d = greatCircleDistance(RadianLocation(l), RadianLocation(lAnti))
+//  println(d)
 
 }
