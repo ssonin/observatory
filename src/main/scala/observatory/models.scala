@@ -1,6 +1,6 @@
 package observatory
 
-import scala.math.{toRadians => radians}
+import scala.math.{ceil, floor, toRadians => radians}
 
 /**
   * Introduced in Week 1. Represents a location on the globe.
@@ -51,7 +51,11 @@ case class GridLocation(lat: Int, lon: Int) {
   * @param x X coordinate inside the cell, 0 ≤ x ≤ 1
   * @param y Y coordinate inside the cell, 0 ≤ y ≤ 1
   */
-case class CellPoint(x: Double, y: Double)
+case class CellPoint(x: Double, y: Double) {
+  def this(loc: Location) = {
+    this(loc.lon - floor(loc.lon), ceil(loc.lat) - loc.lat)
+  }
+}
 
 /**
   * Introduced in Week 2. Represents an RGB color.

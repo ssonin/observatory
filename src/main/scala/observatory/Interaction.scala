@@ -29,9 +29,8 @@ object Interaction extends InteractionInterface {
     * @return A 256×256 image showing the contents of the given tile
     */
   def tile(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)], tile: Tile): Image = {
-    val (size, alpha) = (256, 127)
     val locations = zoomIn(List(tile)).par.map(tileLocation)
-    visualize(locations)(size, size, alpha)(temperatures, colors)
+    visualize(locations)(tileWidth, tileHeight, alpha)(temperatures, colors)
   }
 
   @tailrec

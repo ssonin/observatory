@@ -94,7 +94,6 @@ object Visualization extends VisualizationInterface {
   def visualize(temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
     val (minLat, maxLat, minLon, maxLon) = (-89, 90, -180, 179)
     val (width, height) = (360, 180)
-    val alpha = 127
     val locations = (maxLat to minLat by -1).par.flatMap(lat => (minLon to maxLon).map(lon => Location(lat, lon)))
     visualize(locations)(width, height, alpha)(temperatures, colors)
   }
