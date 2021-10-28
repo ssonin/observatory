@@ -95,11 +95,11 @@ object Visualization extends VisualizationInterface {
     val (minLat, maxLat, minLon, maxLon) = (-89, 90, -180, 179)
     val (width, height) = (360, 180)
     val locations = (maxLat to minLat by -1).par.flatMap(lat => (minLon to maxLon).map(lon => Location(lat, lon)))
-    visualize(locations)(width, height, alpha)(temperatures, colors)
+    visualize(locations)(width, height)(temperatures, colors)
   }
 
   def visualize(locations: ParIterable[Location])
-               (width: Int, height: Int, alpha: Int)
+               (width: Int = tileWidth, height: Int = tileHeight, alpha: Int = alpha)
                (temperatures: Iterable[(Location, Temperature)], colors: Iterable[(Temperature, Color)]): Image = {
     require(width * height == locations.size,
       s"(width * height) should be equal to locations.size: $width * $height != ${locations.size}")

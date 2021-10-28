@@ -1,30 +1,39 @@
 package observatory
 
 import java.io.File
+import java.nio.file.{Files, Paths}
 
 import com.sksamuel.scrimage.writer
 import observatory.Visualization.greatCircleDistance
+import observatory.Interaction.{generateImage, generateTiles}
 
 object Main extends App {
 
-//  val temperatures: Iterable[(Location, Temperature)] =
-//    Extraction.locationYearlyAverageRecords(
-//      Extraction.locateTemperatures(2015, "/stations.csv", "/2015.csv"))
+  val stationsFile = "/stations.csv"
+  val years = (2009 to 2012).par
+
+  for {
+    year <- years
+    data = Extraction.locationYearlyAverageRecords(Extraction.locateTemperatures(year, stationsFile, s"/$year.csv"))
+  } generateTiles(List((year, data)), generateImage(temperaturesColorScale))
+
+//  val dir = s"target/temperatures/2015/0"
+//  Files.createDirectories(Paths.get(dir))
+//  Files.createDirectories(Paths.get(dir))
+
+
+//  val year = 2015
+//  val temperatures: Iterable[(Location, Temperature)] = Extraction.locationYearlyAverageRecords(
+//    Extraction.locateTemperatures(year, stationsFile, s"/$year.csv"))
 //
-//  val colors = List(
-//    (60.0, Color(255, 255, 255)),
-//    (32.0, Color(255, 0, 0)),
-//    (12.0, Color(255, 255, 0)),
-//    (0.0, Color(0, 255, 255)),
-//    (-15.0, Color(0, 0, 255)),
-//    (-27.0, Color(255, 0, 255)),
-//    (-50.0, Color(33, 0, 107)),
-//    (-60.0, Color(0, 0, 0)))
-//
-//  val image = Visualization.visualize(temperatures, colors)
+//  generateTiles(List((year, temperatures)), generateImage(temperaturesColorScale))
+
+
+
+//  val image = Visualization.visualize(temperatures, temperaturesColorScale)
 //  image.output(new File("target/image2015.png"))
 //
-//  val tile = Interaction.tile(temperatures, colors, Tile(0, 0, 0))
+//  val tile = Interaction.tile(temperatures, temperaturesColorScale, Tile(0, 0, 0))
 //  tile.output(new File("target/tile2015.png"))
 
 //
@@ -115,25 +124,13 @@ object Main extends App {
 //  println(t1 == t2)
 
 //  val makeGridLocations = List((Location(45.0,-90.0),10.0), (Location(-45.0,0.0),20.0))
-  val makeGridLocations = List((Location(45.0,-90.0),5.0), (Location(-45.0,0.0),30.0))
-//  val copy = List((Location(45.0,-90.0),5.0), (Location(-45.0,0.0),30.0))
-//  println(makeGridLocations == copy)
-  val f = Manipulation.makeGrid(makeGridLocations)
-
-  val t = f(GridLocation(90, -180))
-  println(t)
-
-  println(greatCircleDistance(RadianLocation(Location(45.0,-90.0)), RadianLocation(Location(90, -180))))
-  println(greatCircleDistance(RadianLocation(Location(-45.0,0.0)), RadianLocation(Location(90, -180))))
-
-
-
-
-
-  //  val l = Location(90, -180)
-//  val lAnti = Location(-l.lat, l.lon + 180)
+//  val makeGridLocations = List((Location(45.0,-90.0),5.0), (Location(-45.0,0.0),30.0))
+//  val f = Manipulation.makeGrid(makeGridLocations)
 //
-//  val d = greatCircleDistance(RadianLocation(l), RadianLocation(lAnti))
-//  println(d)
+//  val t = f(GridLocation(90, -180))
+//  println(t)
+//
+//  println(greatCircleDistance(RadianLocation(Location(45.0,-90.0)), RadianLocation(Location(90, -180))))
+//  println(greatCircleDistance(RadianLocation(Location(-45.0,0.0)), RadianLocation(Location(90, -180))))
 
 }

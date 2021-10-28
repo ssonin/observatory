@@ -1,8 +1,10 @@
 package observatory
 
-import com.sksamuel.scrimage.{Image, Pixel}
+import com.sksamuel.scrimage.{Image, writer}
 import observatory.Visualization.visualize
+import org.apache.log4j.Logger
 
+import java.nio.file.{Files, Paths}
 import scala.annotation.tailrec
 import scala.math.{Pi, atan, sinh, toDegrees => degrees}
 
@@ -10,6 +12,8 @@ import scala.math.{Pi, atan, sinh, toDegrees => degrees}
   * 3rd milestone: interactive visualization
   */
 object Interaction extends InteractionInterface {
+
+  private val logger = Logger.getLogger("Interaction")
 
   /**
     * @param tile Tile coordinates
@@ -49,11 +53,24 @@ object Interaction extends InteractionInterface {
     */
   def generateTiles[Data](yearlyData: Iterable[(Year, Data)], generateImage: (Year, Tile, Data) => Unit): Unit = {
     for {
-      zoom <- (0 to 3).par
+      zoom <- 0 to 3
       x <- 0 until (1 << zoom)
       y <- 0 until (1 << zoom)
       (year, data) <- yearlyData
     } generateImage(year, Tile(x, y, zoom), data)
+  }
+
+  def generateImage(colors: Iterable[(Temperature, Color)])
+                   (year: Year, t: Tile, data: Iterable[(Location, Temperature)]): Unit = {
+    val start = System.nanoTime()
+    val image = tile(data, colors, t)
+
+    val dir = s"target/temperatures/$year/${t.zoom}"
+    val file = s"${t.x}-${t.y}.png"
+    Files.createDirectories(Paths.get(dir))
+
+    image.output(Paths.get(dir, file))
+    logger.info(s"Generated $dir/$file in ${(System.nanoTime() - start) / math.pow(10, 9)} seconds")
   }
 
 }
